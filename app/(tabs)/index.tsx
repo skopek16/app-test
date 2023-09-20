@@ -292,7 +292,17 @@ export default function TabOneScreen() {
           </View>
         </>
       ) : (
-        <></>
+        <View style={styles.container}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={async () => {
+              await clearAll()
+              fetchDeck()
+            }}
+          >
+            <Text style={styles.buttonText}>Reset game</Text>
+          </TouchableOpacity>
+        </View>
       )}
     </View>
   )
