@@ -18,6 +18,7 @@ import {
 import { DrawCard } from "../../axios/DrawCard"
 import { ReshuffleDeck } from "../../axios/ReshuffleDeck"
 import { verticalScale } from "react-native-size-matters"
+import { GetNewShuffledDeck } from "../../axios/GetNewShuffledDeck"
 type deckType = {
   deck_id: string
   remaining: number
@@ -45,12 +46,33 @@ export default function TabOneScreen() {
     value: "",
     suit: "",
   })
+  const getNewShuffledDeck = async () => {
+    setCurrentCard({
+      code: "",
+      image: "",
+      images: {
+        svg: "",
+        png: "",
+      },
+      value: "",
+      suit: "",
+    })
+
+    const response = await GetNewShuffledDeck()
+    if (response.status == 200) {
+      setDeck(response.data)
+      storeData("deckId", response.data.deck_id)
+    } else {
+    }
+  }
   const fetchDeck = async () => {
     let savedDeckId = await getData("deckId")
     let savedGuesses = await getData("correctGuesses")
 
     if (savedGuesses) {
       setCorrectGuesses(parseInt(savedGuesses))
+    } else {
+      setCorrectGuesses(0)
     }
     if (savedDeckId) {
       let savedCard = await getData("savedCard")
@@ -81,17 +103,24 @@ export default function TabOneScreen() {
     const response = await DrawCard(deck.deck_id)
     if (response.status == 200) {
       if (response.data.cards.length != 0) {
-        if (response.data.cards[0] < currentCard.value && guessChoice == -1) {
-          setCorrectGuesses(correctGuesses + 1)
-          storeData("correctGuesses", (correctGuesses + 1).toString())
-        }
-        if (response.data.cards[0] == currentCard.value && guessChoice == 0) {
-          setCorrectGuesses(correctGuesses + 1)
-          storeData("correctGuesses", (correctGuesses + 1).toString())
-        }
-        if (response.data.cards[0] > currentCard.value && guessChoice == 1) {
-          setCorrectGuesses(correctGuesses + 1)
-          storeData("correctGuesses", (correctGuesses + 1).toString())
+        if (currentCard.code != "") {
+          let newValue = response.data.cards[0].value
+          if (newValue == "JACK") newValue = 11
+          if (newValue == "QUEEN") newValue = 12
+          if (newValue == "KING") newValue = 13
+          if (newValue == "ACE") newValue = 14
+          if (newValue < currentCard.value && guessChoice == -1) {
+            setCorrectGuesses(correctGuesses + 1)
+            storeData("correctGuesses", (correctGuesses + 1).toString())
+          }
+          if (newValue == currentCard.value && guessChoice == 0) {
+            setCorrectGuesses(correctGuesses + 1)
+            storeData("correctGuesses", (correctGuesses + 1).toString())
+          }
+          if (newValue > currentCard.value && guessChoice == 1) {
+            setCorrectGuesses(correctGuesses + 1)
+            storeData("correctGuesses", (correctGuesses + 1).toString())
+          }
         }
 
         setCurrentCard(response.data.cards[0])
@@ -145,16 +174,22 @@ export default function TabOneScreen() {
             </TouchableOpacity>
           </View>
           <View style={styles.deckControlContainer}>
-            <TouchableOpacity style={styles.button} onPress={() => {}}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => {
+                getNewShuffledDeck()
+              }}
+            >
               <Text style={styles.buttonText}>Draw new shuffled deck</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.button}
-              onPress={() => {
-                clearAll()
+              onPress={async () => {
+                await clearAll()
+                fetchDeck()
               }}
             >
-              <Text style={styles.buttonText}>clear store</Text>
+              <Text style={styles.buttonText}>Reset game</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.cardContainer}>
