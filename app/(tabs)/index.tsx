@@ -48,15 +48,13 @@ export default function TabOneScreen() {
   const fetchDeck = async () => {
     let savedDeckId = await getData("deckId")
     let savedGuesses = await getData("correctGuesses")
-    console.log("savedDeckId")
-    console.log(savedDeckId)
+
     if (savedGuesses) {
       setCorrectGuesses(parseInt(savedGuesses))
     }
     if (savedDeckId) {
       let savedCard = await getData("savedCard")
-      console.log("savedCard")
-      console.log(savedCard)
+
       if (savedCard) {
         setCurrentCard(savedCard)
       }
@@ -77,12 +75,10 @@ export default function TabOneScreen() {
       setDeck(response.data)
       storeData("deckId", response.data.deck_id)
     } else {
-      console.log(response)
     }
   }
   const drwaCard = async () => {
     const response = await DrawCard(deck.deck_id)
-    console.log(response)
     if (response.status == 200) {
       if (response.data.cards.length != 0) {
         if (response.data.cards[0] < currentCard.value && guessChoice == -1) {
@@ -105,7 +101,6 @@ export default function TabOneScreen() {
       storeData("savedCard", response.data.cards[0])
       setDeck({ ...deck, remaining: response.data.remaining })
     } else {
-      console.log(response)
     }
   }
   const reshuffleDeck = async () => {
@@ -113,7 +108,6 @@ export default function TabOneScreen() {
     if (savedDeckId) {
       const response = await ReshuffleDeck(savedDeckId)
       setDeck(response.data)
-      console.log(response.data)
     } else {
       fetchDeck()
     }
